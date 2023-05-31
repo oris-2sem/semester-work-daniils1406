@@ -1,0 +1,77 @@
+version: '3'
+services:
+  minio:
+    image: minio/minio
+    hostname: "minio"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      MINIO_ACCESS_KEY: admin
+      MINIO_SECRET_KEY: 12345678
+    volumes:
+      - ./data:/data
+      - ./config:/root/.minio/
+    command: server --console-address ':9001' /data
+    privileged: true
+    restart: always
+    networks:
+      - spring-cloud-network
+
+
+
+
+  tiny-cian-service:
+    image: cianchik
+    container_name: tiny-cian-service
+    depends_on:
+      - minio
+      - tiny-cian-db
+      - consul
+    links:
+      - minio
+      - tiny-cian-db
+      - consul
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: tiny-cian-db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: Landrover2013
+      MINIO_HOST: minio
+      MINIO_PORT: 9000
+      CONSUL_HOST: consul
+    networks:
+      - spring-cloud-network
+
+  tiny-cian-db:
+    container_name: tiny-cian-db
+    image: postgres:12-alpine
+    restart: on-failure
+    ports:
+      - "5433:5432"
+    volumes:
+      - /var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Landrover2013
+      POSTGRES_DB: oris
+    networks:
+      - spring-cloud-network
+
+
+
+  consul:
+    image: consul:1.1.0
+    hostname: localhost
+    ports:
+      - 8500:8500
+    networks:
+      - spring-cloud-network
+    network_mode: bridge
+
+
+networks:
+  spring-cloud-network:
+    driver: bridge

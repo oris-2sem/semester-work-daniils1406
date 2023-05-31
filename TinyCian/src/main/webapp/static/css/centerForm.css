@@ -1,0 +1,13 @@
+.outer {
+    width: 200px;
+    height: 200px;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #ffc;
+}
+.inner {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    background-color: #fcc;
+}
